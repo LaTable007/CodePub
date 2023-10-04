@@ -1,3 +1,4 @@
+CC = gcc-13
 # librairies de PRIMME
 LIBP = -L./primme/ -lprimme
 # includes de PRIMME
@@ -14,9 +15,9 @@ clean:
 	rm main
 
 main: main.c prob.o time.o interface_primme.o
-	cc $(COPT) $^ -o $@ $(LIB)
+	$(CC) $(COPT) $^ -o $@ $(LIB)
 
 %.o: %.c
-	cc $(COPT) -c $< -o $@ $(INCP)
+	$(CC) $(COPT) -c $< -o $@ $(INCP)
 
 
