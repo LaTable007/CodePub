@@ -27,29 +27,31 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
   n  (output) - pointeur vers le nombre d'inconnues dans le système
   ia (output) - pointeur vers le tableau 'ia' de la matrice A
   ja (output) - pointeur vers le tableau 'ja' de la matrice A
-  a  (output) - pointeur vers le tableau 'a' de la matrice A
- 
+  a  (output) - pointeur vers le tableau 'a' de la matrice A  
+    
   Sortie
   ======
   0 - exécution avec succès
   1 - erreurs
 */
 {
-    int  nnz, ix, iy, nx, ind = 0;
-    double invh2;
+    int  nnz, ix, iy, nx, ind = 0, ny;
+    double invh2, lx = 2.0; /* longueur du côté le plus petit du rectangle (en m) */
 
     nx = m - 2; /* nœuds de Dirichlet ne sont pas pris en compte */
-    invh2 = (m-1)*(m-1); /* h^-2 pour L=1 */
-    *n  = nx * nx; /* nombre d'inconnues */
+    ny = 9; /* nombre d'inconnue selon la direction y */
+    invh2 = ((m-1)*(m-1))/(lx * lx); /* h^-2 pour un rectangle dont le plus petit côté vaut 2 */
+    *n  = nx * ny; /* nombre d'inconnues */
     nnz = 5 * nx * nx - 4 * nx; /* nombre d'éléments non nuls */
-
+    printf("%d\n", nnz);
+  
     /* allocation des tableaux */
 
     *ia  = malloc((*n + 1) * sizeof(int));
     *ja  = malloc(nnz * sizeof(int));
     *a   = malloc(nnz * sizeof(double));
 
-    /* allocation réussite? */
+  /* allocation réussite? */
 
     if (*ia == NULL || *ja == NULL || *a == NULL ) {
         printf("\n ERREUR : pas assez de mémoire pour générer la matrice\n\n");
@@ -96,7 +98,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
             if (iy < nx - 1) {
                 (*a)[nnz] = -invh2; /* pour D=1 */
                 (*ja)[nnz] = ind + nx;
-                nnz++;
+                nnz++; 
             }
         }
     }
