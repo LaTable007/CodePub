@@ -134,35 +134,80 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
       /* numéro de l'équation */
       ind = ix  + nx * iy;
 
-      printf("\n");
-      if((ind != 16) && (ind != 17) && (ind != 18) && (ind != 19) && (ind != 23) && (ind != 24) && (ind != 25) && (ind != 26) && (ind != 30) && (ind != 31) && (ind != 32) && (ind != 33) && (ind != 37) && (ind != 38) && (ind != 39) && (ind != 40)){ 
+      int vind = ind;
+
+
+      //printf("%d ", ind);
+
+      if((vind == 16) || (vind == 23) || (vind == 30) || (vind == 37)){
+
+          vind = vind - 1;
+        }
+
+
+      if((vind == 17) || (vind == 24) || (vind == 31) || (vind == 38)){
+
+          vind = vind - 2;
+        }
+
+      if((vind == 18) || (vind == 25) || (vind == 32) || (vind == 39)){
+
+          vind = vind - 3;
+        }
+
+
+      if((vind >= 19) && (vind <= 22)){
+
+          vind = vind - 4;
+        }
+
+      if((vind >= 26) && (vind <= 29)){
+        vind = vind - 8;
+      }
+
+      if((vind >= 33) && (vind <= 36)){
+        vind = vind - 12;
+      }
+
+      if(vind >= 40){
+        vind = vind - 16;
+      }
+
+
+
+      
+
+      if((ind != 16) && (ind != 17) && (ind != 18) && (ind != 19) && (ind != 23) && (ind != 24) && (ind != 25) && (ind != 26) && (ind != 30) && (ind != 31) && (ind != 32) && (ind != 33) && (ind != 37) && (ind != 38) && (ind != 39) && (ind != 40)){
+
+        //printf("%d", vind);
+
         /* marquer le début de la ligne suivante dans le tableau 'ia' */
-        (*ia)[ind] = nnz;
-        printf("ia %d\n", (*ia)[ind]);
+        (*ia)[vind] = nnz;       
+        //printf("ia %d\n", (*ia)[ind]);
         
         /* remplissage de la ligne : voisin sud */
         if (iy > 0){
           if ((44 > ind) || (ind > 47))  {
             (*a)[nnz] = -invh2; /* pour D=1 */
-            (*ja)[nnz] = ind - nx;
+            (*ja)[nnz] = vind - nx;
             printf("Sud %d / %f / %d\n", ind, (*a)[nnz], (*ja)[nnz]);
             nnz++;
           }
         }
 
-            /* remplissage de la ligne : voisin ouest */
+        /* remplissage de la ligne : voisin ouest */
         if (ix > 0) {
-          if((ind != 20) && (ind != 27) && (ind != 34) &&(ind != 41)){
+          if((ind != 20) && (ind != 27) && (ind != 34) && (ind != 41)){
             (*a)[nnz] = -invh2; /* pour D=1 */
-            (*ja)[nnz] = ind - 1;
+            (*ja)[nnz] = vind - 1;
             printf("Ouest %d / %f / %d\n", ind, (*a)[nnz], (*ja)[nnz]);
             nnz++;
           }
         }
       
-          /* remplissage de la ligne : élément diagonal */
+        /* remplissage de la ligne : élément diagonal */
         (*a)[nnz] = 4.0*invh2; /* pour D=1 */
-        (*ja)[nnz] = ind;
+        (*ja)[nnz] = vind;
         printf("Diagonal %d / %f / %d\n", ind, (*a)[nnz], (*ja)[nnz]);
         nnz++;
 
@@ -170,7 +215,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
         if (ix < nx - 1 ){
           if((ind != 15) && (ind != 22) && (ind != 29) && (ind != 36)){
             (*a)[nnz] = -invh2; /* pour D=1 */
-            (*ja)[nnz] = ind + 1;
+            (*ja)[nnz] = vind + 1;
             printf("Est %d / %f / %d\n", ind, (*a)[nnz], (*ja)[nnz]);
             nnz++;
           }
@@ -180,17 +225,24 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
         if (iy < ny - 1){
           if((ind < 9) || (ind > 12)) {
             (*a)[nnz] = -invh2; /* pour D=1 */
-            (*ja)[nnz] = ind + nx;
+            (*ja)[nnz] = vind + nx;
             printf("Nord %d / %f / %d\n", ind, (*a)[nnz], (*ja)[nnz]);
             nnz++; 
           }
         } 
       }
+      //printf("\n");
     }
   } 
 
   /* dernier élément du tableau 'ia' */
   (*ia)[ind + 1] = nnz;
+
+  P_SEP;
+  int f = 0;
+  for(;f < nnz;f++){
+    //printf("%f\n", (*a)[f]);
+  }
   P_SEP;
   int i = 0;
   for(;i < *n + 1; i++) {
