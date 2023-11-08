@@ -37,7 +37,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
 */
 {   
   int  nnz, ix, iy, nx, ind = 0, ny;
-  double invh2, lx = 2.0, ly = 5.0 / 2, d, h; /* longueur du côté le plus petit du rectangle (en m) */
+  double invh2, lx = 2.0, ly = 5.0/2, d, h; /* longueur du côté le plus petit du rectangle (en m) */
 
   if (lx <= ly){ // si le rectangle est plus long en y on fait en sorte que le pas de discrétisation est définie sur x
     nx = m - 2; //nombre d'élément le long de x
@@ -45,8 +45,8 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
     h = lx / (m-1);// le pas de discrétisation
     ny = (d / h) + nx;//nombre d'élément selon y
     invh2 = (m-1) * (m-1) / (lx * lx);//inverse au carré du pas de dicrétisation
-    
   }
+
   else{//même résonnement qu'avant mais pour un rectangle dont le plus grand côté est en x
     ny = m - 2;
     d = lx - ly;
@@ -59,59 +59,56 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
   printf("élément x = %d\n", nx);
   printf("élément y = %d\n", ny);
   printf("invh2 = %f\n", invh2);
-  
 
-  double tx1 = 3.0 / 4, tx2 = 6.0 / 4, ty1 = 3.0 / 4, ty2 = 6.0 / 4;
-  int tind, dx, find;
+  double tx1 = 3.0/4, tx2 = 6.0/4, ty1 = 3.0/4, ty2 = 6.0/4;
+  int tind, dx, find, dy;
 
   if ((tx1 != 0.0) && (ty1 != 0.0) && (tx2 != lx)){
     printf("cas 1\n");
     tind = (tx1 / h) + (nx * ((ty1 / h) - 1)) - 1;
     dx = (tx2 / h) + (nx * ((ty1 / h) - 1)) - tind;
-    find = (tx2 /h) + (nx * ((ty2 / h) -1)); 
-    
-
+    dy = (((ty2 - ty1) / h) * nx);
+    find = (tx2 / h) + (nx * ((ty2 / h) -1)) - 1;  
   }
+/*
   else if ((tx1 != 0.0) && (ty1 == 0.0)) {
     printf("cas 2\n");
     tind = tx1 / h;
     dx = tx2 / h - tind;
-
   }
+
   else if ((tx1 == 0.0) && (ty1 != 0.0)) {
     printf("cas 3\n");
     tind = 1 + (nx * ((ty1 / h) - 1));
     dx = (tx2 / h) + (nx * ((ty1 / h) - 1)) - tind;
-
   }
+
   else if ((tx1 == 0.0) && (ty1 == 0.0)) {
     printf("cas 4\n");
     tind = 0.0;
     dx = (tx2 / h) + (nx * (ty1 / h)) - 1.0;
-
   }
+
   else if (tx2 == lx){
     printf("cas 5\n");
     tind = (tx1 / h) + (nx * ((ty1 / h) - 1));
     dx = (tx2 / h) + (nx * ((ty1 / h) - 1)) - tind - 1;
-
-
   }
+*/
   printf("indice trou = %d\n", tind);
 
   printf("indice fin = %d\n", find);
 
-  printf("longueur trou = %d\n", dx);
+  printf("largeur trou = %d\n", dx);
 
+  printf("longueur trou = %d\n", dy);
 
-
-  *n  = nx * ny - 16; /* nombre d'inconnues */
-  nnz = ((5 * nx * ny) - (4.0 * (ny + nx) / 2)) - (6.0 * (tx2 - tx1 + h) * (ty2 - ty1 + h) / (h * h)); 
+  *n  = nx * ny - (((tx2 - tx1 + h) / h) * (ty2 - ty1 + h) / h); /* nombre d'inconnues */
+  nnz = ((5 * nx * ny) - (4.0 * (ny + nx) / 2)) - (6.0 * (tx2 - tx1 + h) * (ty2 - ty1 + h) / (h * h));
   /* nombre d'éléments non nuls a retiré calculé 64 normalement mais on retire 96 pour arriver à 187  */
+  
   printf("nnz = %d\n", nnz);
   printf("le nombre d'élément = %d\n", *n);
-
-
   
   /* allocation des tableaux */
 
@@ -137,100 +134,89 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
       /* numéro de l'équation */
       ind = ix  + nx * iy;
 
-
-      //printf("%d ", ind);
+      //printf("%d ", ind); 
       
-
-      if((ind == 16) || (ind == 23) || (ind == 30) || (ind == 37)){
-        error = error + 1;
-        }
-
-
-      if((ind == 17) || (ind == 24) || (ind == 31) || (ind == 38)){
-        error = error + 1;
-        }
-
-      if((ind == 18) || (ind == 25) || (ind == 32) || (ind == 39)){
-        error = error + 1;
-        }
-
-
-      if((ind == 19) || (ind == 26) || (ind == 33) || (ind == 40)){
-        error = error + 1;
-        }
+      if ((tind <= ind) && ((ind - tind) % nx <= dx - 1) && (ind <= find)) {// L'indice ind est dans le trou carré
+        //printf("L'indice %d se trouve dans le trou carré.\n", ind);
+        error++;
+        continue;
+      }
+      /*
+      else {// L'indice ind n'est pas dans le trou carré
+        printf("L'indice %d n'est pas dans le trou carré.\n", ind);
+      }
+      */
 
       //printf("%d ", error);
-
 
       vind = ind - error;
 
       //printf("%d ", vind);
 
+      //printf("%d", vind);
 
-      if((ind != 16) && (ind != 17) && (ind != 18) && (ind != 19) && (ind != 23) && (ind != 24) && (ind != 25) && (ind != 26) && (ind != 30) && (ind != 31) && (ind != 32) && (ind != 33) && (ind != 37) && (ind != 38) && (ind != 39) && (ind != 40)){ 
-
-        //printf("%d", vind);
-
-        /* marquer le début de la ligne suivante dans le tableau 'ia' */
-        (*ia)[vind] = nnz;       
-        printf("%d\n", (*ia)[vind]);
+      /* marquer le début de la ligne suivante dans le tableau 'ia' */
+      (*ia)[vind] = nnz;       
+      //printf("%d\n", (*ia)[vind]);
         
-        /* remplissage de la ligne : voisin sud */
-        if (iy > 0){
-          if ((28 > vind) || (vind > 31))  {
-            (*a)[nnz] = -invh2; /* pour D=1 */
-            if((vind < 16) || (27 < vind )){
-              (*ja)[nnz] = vind - nx;
-            }
-            else{
-              (*ja)[nnz] = vind - nx + 4;
-            }
-            printf("Sud %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
-            nnz++;
+      /* remplissage de la ligne : voisin sud */
+      if (iy > 0){
+        if ((ind < find - dx + nx + 1) || (find + nx < ind))  {
+          (*a)[nnz] = -invh2; /* pour D=1 */
+          if((ind < tind) || (find +nx - dx < ind )){
+            (*ja)[nnz] = vind - nx;
           }
+          else{
+            (*ja)[nnz] = vind - nx + dx;
+          }
+          //printf("Sud %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
+          nnz++;
         }
+      }
 
-        /* remplissage de la ligne : voisin ouest */
-        if (ix > 0) {
-          if((vind != 16) && (vind != 19) && (vind != 22) && (vind != 25)){
-            (*a)[nnz] = -invh2; /* pour D=1 */
-            (*ja)[nnz] = vind - 1;
-            printf("Ouest %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
-            nnz++;
-          }
+      /* remplissage de la ligne : voisin ouest */
+      if (ix > 0){
+        if((tind + dx <= ind) && ((ind - tind - dx) % nx == 0) && (ind <= find + 1)){
         }
+        else {
+          (*a)[nnz] = -invh2; /* pour D=1 */
+          (*ja)[nnz] = vind - 1;
+          //printf("Ouest %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
+          nnz++;
+        }
+      }
       
-        /* remplissage de la ligne : élément diagonal */
-        (*a)[nnz] = 4.0*invh2; /* pour D=1 */
-        (*ja)[nnz] = vind;
-        printf("Diagonal %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
-        nnz++;
+      /* remplissage de la ligne : élément diagonal */
+      (*a)[nnz] = 4.0*invh2; /* pour D=1 */
+      (*ja)[nnz] = vind;
+      //printf("Diagonal %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
+      nnz++;
 
-        /* remplissage de la ligne : voisin est */
-        if (ix < nx - 1 ){
-          if((vind != 15) && (vind != 18) && (vind != 21) && (vind != 24)){
-            (*a)[nnz] = -invh2; /* pour D=1 */
-            (*ja)[nnz] = vind + 1;
-            printf("Est %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
-            nnz++;
-          }
+      /* remplissage de la ligne : voisin est */
+      if (ix < nx - 1 ){
+        if((tind - 1<= ind) && ((ind - tind + 1) % nx == 0) && (ind <= find - dx)){
         }
+        else{
+          (*a)[nnz] = -invh2; /* pour D=1 */
+          (*ja)[nnz] = vind + 1;
+          //printf("Est %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
+          nnz++;
+        }
+      }
 
-        /* remplissage de la ligne : voisin nord */
-        if (iy < ny - 1){
-          if((vind < 9) || (vind > 12)) {
-            (*a)[nnz] = -invh2; /* pour D=1 */
-            if((vind < 13) || (24 < vind)){
-              (*ja)[nnz] = vind + nx;
-            }
-            else{
-              (*ja)[nnz] = vind + nx - 4;
-            }
-            printf("Nord %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
-            nnz++; 
+      /* remplissage de la ligne : voisin nord */
+      if (iy < ny - 1){
+        if((ind < tind - nx) || (ind > tind + dx - 1 - nx)) {
+          (*a)[nnz] = -invh2; /* pour D=1 */
+          if((ind < tind + dx - nx) || (find - dx < ind)){
+            (*ja)[nnz] = vind + nx;
           }
+          else{
+            (*ja)[nnz] = vind + nx - dx;
+          }
+          //printf("Nord %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
+          nnz++; 
         } 
-        printf("\n");
       }
       //printf("\n");
     }
@@ -242,17 +228,17 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
   P_SEP;
   int f = 0;
   for(;f < nnz;f++){
-   //printf("%f\n", (*a)[f]);
+   printf("%f\n", (*a)[f]);
   }
   P_SEP;
   int i = 0;
   for(;i < *n + 1; i++) {
-    //printf("%i\n ", (*ia)[i]);
+    printf("%i\n", (*ia)[i]);
   }
   P_SEP;
   int j = 0;
   for(;j < nnz; j++) {
-    //printf("%d\n ", (*ja)[j]);
+    printf("%d\n", (*ja)[j]);
   }
 
   /* retour habituel de fonction */
