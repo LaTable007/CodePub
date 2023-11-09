@@ -37,14 +37,19 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
 */
 {   
   int  nnz, ix, iy, nx, ind = 0, ny;
-  double invh2, lx = 2.0, ly = 5.0/2, d, h; /* longueur du côté le plus petit du rectangle (en m) */
+  double invh2, lx = 2.0, ly =  5.0 / 2, d, h; /* longueur du côté le plus petit du rectangle (en m) */
 
   if (lx <= ly){ // si le rectangle est plus long en y on fait en sorte que le pas de discrétisation est définie sur x
-    nx = m - 2; //nombre d'élément le long de x
+    //nx = m - 2; //nombre d'élément le long de x
+    nx = (lx * 4 * m) - 1;
+    //nx = (lx * m) - 1;
     d = ly - lx; // la différence entre la longueur et largeur
-    h = lx / (m-1);// le pas de discrétisation
+    //h = lx / (m-1);// le pas de discrétisation
+    h = 1.0 / (m * 4);
+    //h = 1.0 / m;
     ny = (d / h) + nx;//nombre d'élément selon y
-    invh2 = (m-1) * (m-1) / (lx * lx);//inverse au carré du pas de dicrétisation
+    //invh2 = (m-1) * (m-1) / (lx * lx);//inverse au carré du pas de dicrétisation
+    invh2 = 1 / powf(h, 2);
   }
 
   else{//même résonnement qu'avant mais pour un rectangle dont le plus grand côté est en x
@@ -60,7 +65,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
   printf("élément y = %d\n", ny);
   printf("invh2 = %f\n", invh2);
 
-  double tx1 = 3.0/4, tx2 = 6.0/4, ty1 = 3.0/4, ty2 = 6.0/4;
+  double tx1 = 3.0 / 4, tx2 = 6.0 / 4, ty1 = 3.0 / 4, ty2 = 6.0 / 4;
   int tind, dx, find, dy;
 
   if ((tx1 != 0.0) && (ty1 != 0.0) && (tx2 != lx)){
@@ -163,7 +168,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
       if (iy > 0){
         if ((ind < find - dx + nx + 1) || (find + nx < ind))  {
           (*a)[nnz] = -invh2; /* pour D=1 */
-          if((ind < tind) || (find +nx - dx < ind )){
+          if((ind < tind) || (find + nx - dx < ind )){
             (*ja)[nnz] = vind - nx;
           }
           else{
@@ -233,12 +238,12 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
   P_SEP;
   int i = 0;
   for(;i < *n + 1; i++) {
-    printf("%i\n", (*ia)[i]);
+    //printf("%i\n", (*ia)[i]);
   }
   P_SEP;
   int j = 0;
   for(;j < nnz; j++) {
-    printf("%d\n", (*ja)[j]);
+    //printf("%d\n", (*ja)[j]);
   }
 
   /* retour habituel de fonction */
