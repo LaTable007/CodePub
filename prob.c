@@ -251,7 +251,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
   for(;j < nnz; j++) {
     //printf("%d\n", (*ja)[j]);
   }
-  //printf("%f\n", (*a[0]));
+  printf("%f\n", (*a[0]));
 
   /* retour habituel de fonction */
   return 0;
