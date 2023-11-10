@@ -11,14 +11,16 @@ int main(int argc, char *argv[])
 {
   /* déclarer les variables */
 
-  int m = 1, nev = 1;
+  int m = 6, nev = 1;
   int n, *ia, *ja; 
   double *a;
   double *evals, *evecs;
   double tc1, tc2, tw1, tw2;
+  double *datax;
+  double *datay;
 
   /* générer le problème */
-  if (prob(m, &n, &ia, &ja, &a))
+  if (prob(m, &n, &ia, &ja, &a, &datax, &datay))
      return 1;
 
   printf("\nPROBLÈME: ");
@@ -43,102 +45,65 @@ int main(int argc, char *argv[])
   printf("\nTemps de solution (CPU): %5.1f sec",tc2-tc1);
   printf("\nTemps de solution (horloge): %5.1f sec \n",tw2-tw1);
   printf("\nValeur propre minimale calculée: %5.1f\n",evals[0]);
-  int i = 0;
-  for(; i < n; i++){
-    printf("\nVecteur propre calculée: %f\n", evecs[i]);
-  }
-  printf("%d\n", i);
-  printf("le nombre d'élément est %d\n", n);
+  
 
-  double datax[] = {0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75,
-                    0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75,
-                    0.25, 0.5,                       1.75,
-                    0.25, 0.5,                       1.75,
-                    0.25, 0.5,                       1.75,
-                    0.25, 0.5,                       1.75,
-                    0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75,
-                    0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75,
-                    0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75
-                    };
-  double datay[] = {0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25,
-                    0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
-                    0.75, 0.75, 0.75,
-                    1.0, 1.0, 1.0,
-                    1.25, 1.25, 1.25,
-                    1.5, 1.5, 1.5,
-                    1.75, 1.75, 1.75, 1.75, 1.75, 1.75, 1.75,
-                    2.0, 2.0, 2.0 , 2.0, 2.0, 2.0, 2.0,
-                    2.25, 2.25, 2.25, 2.25, 2.25, 2.25, 2.25
-                    };
-/*
   FILE *gnuplotPipe = popen("gnuplot -persistent", "w");
 
-  
-  for(double t = 0.0; t < 10; t = t + 0.0001){
-  
-    if (gnuplotPipe) {
-      fprintf(gnuplotPipe, "set view 60, 30, 1, 1\n");
-      fprintf(gnuplotPipe, "set ticslevel 0\n");
-      fprintf(gnuplotPipe, "set hidden3d\n");
-      fprintf(gnuplotPipe, "splot '-' with points\n");
+  if (gnuplotPipe) {
+    fprintf(gnuplotPipe, "set view 60, 30, 1, 1\n");
+    fprintf(gnuplotPipe, "set ticslevel 0\n");
+    fprintf(gnuplotPipe, "set hidden3d\n");
+    fprintf(gnuplotPipe, "set xrange [0:2]\n");
+    fprintf(gnuplotPipe, "set yrange [0:2.5]\n");
+    fprintf(gnuplotPipe, "set zrange [-0.1:0.1]\n");
 
-    // Écriture des données dans le fichier pour GNUplot
-      for (int i = 0; i < n; i++){
-       fprintf(gnuplotPipe, "%f %f %f\n", datax[i], datay[i], evecs[i] * sin(t));
-      }
-    
-      fprintf(gnuplotPipe, "e\n");
+    for (double t = 0.0; t < 100; t += 0.1) {
+        fprintf(gnuplotPipe, "splot '-' with points\n");
 
- 
-      // Fermeture du fichier
-      }
-    else {
-      printf("Erreur : Impossible d'ouvrir GNUplot.\n");
-    }
-  }
-
-  pclose(gnuplotPipe);
-  */
- 
- 
-
-    FILE *gnuplotPipe = popen("gnuplot -persistent", "w");
-
-    if (gnuplotPipe) {
-        fprintf(gnuplotPipe, "set view 60, 30, 1, 1\n");
-        fprintf(gnuplotPipe, "set ticslevel 0\n");
-        fprintf(gnuplotPipe, "set hidden3d\n");
-
-        // Définir les plages des axes une seule fois au début
-        fprintf(gnuplotPipe, "set xrange [0:2]\n");
-        fprintf(gnuplotPipe, "set yrange [0:2.5]\n");
-        fprintf(gnuplotPipe, "set zrange [-0.6:0.6]\n");
-
-        for (double t = 0.0; t < 1000; t += 0.1) { // Variation de la valeur propre
-            fprintf(gnuplotPipe, "splot '-' with points\n");
-
-            // Recalculer les données pour chaque instant de temps
-            for (int i = 0; i < n; i++) {
-                double new_value = evecs[i] * sin(t); // Nouvelle valeur basée sur le temps
-                fprintf(gnuplotPipe, "%f %f %f\n", datax[i], datay[i], new_value);
-            }
-
-            fprintf(gnuplotPipe, "e\n");
-            fflush(gnuplotPipe); // Flush pour forcer l'actualisation du graphique
-            if (pclose(gnuplotPipe) != -1) {
-                printf("La fenêtre GNUplot a été fermée. Arrêt du programme.\n");
-                break;
-            }
-
-            usleep(100000); // Pause pour laisser le temps au graphique de se rafraîchir (0.1 seconde)
+        // Recalcul des données pour chaque instant de temps
+        for (int i = 0; i < n; i++) {
+            double new_value = evecs[i] * sin(t); // Nouvelle valeur basée sur le temps
+            fprintf(gnuplotPipe, "%f %f %f\n", datax[i], datay[i], new_value);
         }
 
-        pclose(gnuplotPipe);
+        fprintf(gnuplotPipe, "e\n");
+        fflush(gnuplotPipe); // Forcer l'actualisation du graphique
 
-    } else {
-        printf("Erreur : Impossible d'ouvrir GNUplot.\n");
+        usleep(100000); // Attente pour le rafraîchissement du graphique
     }
 
+    pclose(gnuplotPipe);
+
+  } else {
+    printf("Erreur : Impossible d'ouvrir GNUplot.\n");
+  }
+  
+  /*
+  FILE *gnuplotPipe = popen("gnuplot -persistent", "w");
+
+  if (gnuplotPipe) {
+    fprintf(gnuplotPipe, "set view 80, 30, 1, 1\n");
+    fprintf(gnuplotPipe, "set ticslevel 0\n");
+    fprintf(gnuplotPipe, "set hidden3d\n");
+    fprintf(gnuplotPipe, "set xrange [0:2]\n");
+    fprintf(gnuplotPipe, "set yrange [0:2.5]\n");
+    fprintf(gnuplotPipe, "set zrange [-0.05:0.05]\n");
+
+    fprintf(gnuplotPipe, "splot '-' with points\n");
+
+    // Recalcul des données pour chaque instant de temps
+    for (int i = 0; i < n; i++) {
+      fprintf(gnuplotPipe, "%f %f %f\n", datax[i], datay[i], evecs[i]);
+    }
+
+    fprintf(gnuplotPipe, "e\n");
+    pclose(gnuplotPipe);
+
+  } 
+  else {
+    printf("Erreur : Impossible d'ouvrir GNUplot.\n");
+  }
+  */
   
   /*libérer la mémoire */
   free(ia); free(ja); free(a); free(evals); free(evecs);

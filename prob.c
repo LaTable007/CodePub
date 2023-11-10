@@ -2,8 +2,9 @@
 #include <stdio.h>
 #include <math.h>
 
+
 #define P_SEP printf("====================================\n")
-int prob(int m, int *n, int **ia, int **ja, double **a)
+int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double **datay)
 /*
    But
    ===
@@ -138,6 +139,15 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
   nnz = 0;
   int error = 0;
   int vind = 0;
+  *datax = malloc(*n * sizeof(double));
+  *datay = malloc(*n * sizeof(double));
+
+  if (*datax == NULL || *datay == NULL) {
+    printf("\n ERREUR : pas assez de mémoire pour générer les coordonnées\n\n");
+    return 1; 
+  } 
+
+
 
   for (iy = 0; iy < ny; iy++) {
     for (ix = 0; ix < nx; ix++) { 
@@ -161,7 +171,11 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
 
       vind = ind - error;
 
-      //printf("%d ", vind);
+      (*datax)[vind] = h * (ix + 1);
+      (*datay)[vind] = h * iy;
+
+
+       //printf("%d ", vind);
 
       //printf("%d", vind);
 
@@ -230,7 +244,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
       }
       //printf("\n");
     }
-  } 
+  }
 
   /* dernier élément du tableau 'ia' */
   (*ia)[vind + 1] = nnz;
@@ -251,8 +265,8 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
   for(;j < nnz; j++) {
     //printf("%d\n", (*ja)[j]);
   }
-  printf("%f\n", (*a[0]));
 
   /* retour habituel de fonction */
   return 0;
 }
+
