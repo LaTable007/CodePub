@@ -49,7 +49,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
     //h = 1.0 / m;
     ny = (d / h) + nx;//nombre d'élément selon y
     //invh2 = (m-1) * (m-1) / (lx * lx);//inverse au carré du pas de dicrétisation
-    invh2 = 1 / powf(h, 2);
+    invh2 = 1 / (h * h);
   }
 
   else{//même résonnement qu'avant mais pour un rectangle dont le plus grand côté est en x
@@ -108,8 +108,13 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
 
   printf("longueur trou = %d\n", dy);
 
+  int fy;
+  fy = ((ty2 - ty1) / h) + 1;
+  printf("%d\n", fy);
+
   *n  = nx * ny - (((tx2 - tx1 + h) / h) * (ty2 - ty1 + h) / h); /* nombre d'inconnues */
-  nnz = ((5 * nx * ny) - (4.0 * (ny + nx) / 2)) - (6.0 * (tx2 - tx1 + h) * (ty2 - ty1 + h) / (h * h));
+  //nnz = ((5 * nx * ny) - (4.0 * (ny + nx) / 2)) - (6.0 * (tx2 - tx1 + h) * (ty2 - ty1 + h) / (h * h));
+  nnz = (5 * nx * ny) - (2 * (nx + ny) ) - (5 * dx * fy) - (2 * (fy + dx));
   /* nombre d'éléments non nuls a retiré calculé 64 normalement mais on retire 96 pour arriver à 187  */
   
   printf("nnz = %d\n", nnz);
@@ -174,7 +179,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
           else{
             (*ja)[nnz] = vind - nx + dx;
           }
-          //printf("Sud %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
+          //printf("Sud %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
           nnz++;
         }
       }
@@ -186,7 +191,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
         else {
           (*a)[nnz] = -invh2; /* pour D=1 */
           (*ja)[nnz] = vind - 1;
-          //printf("Ouest %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
+          //printf("Ouest %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
           nnz++;
         }
       }
@@ -194,7 +199,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
       /* remplissage de la ligne : élément diagonal */
       (*a)[nnz] = 4.0*invh2; /* pour D=1 */
       (*ja)[nnz] = vind;
-      //printf("Diagonal %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
+      //printf("Diagonal %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
       nnz++;
 
       /* remplissage de la ligne : voisin est */
@@ -204,7 +209,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
         else{
           (*a)[nnz] = -invh2; /* pour D=1 */
           (*ja)[nnz] = vind + 1;
-          //printf("Est %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
+          //printf("Est %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
           nnz++;
         }
       }
@@ -219,7 +224,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
           else{
             (*ja)[nnz] = vind + nx - dx;
           }
-          //printf("Nord %d / %f / %d\n", vind, (*a)[nnz], (*ja)[nnz]);
+          //printf("Nord %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
           nnz++; 
         } 
       }
@@ -229,11 +234,12 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
 
   /* dernier élément du tableau 'ia' */
   (*ia)[vind + 1] = nnz;
+  //printf("%d", nnz);
 
   P_SEP;
   int f = 0;
-  for(;f < nnz;f++){
-   printf("%f\n", (*a)[f]);
+  for(;f < nnz; f++){
+   //printf("%f\n", (*a)[f]);
   }
   P_SEP;
   int i = 0;
@@ -245,6 +251,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a)
   for(;j < nnz; j++) {
     //printf("%d\n", (*ja)[j]);
   }
+  //printf("%f\n", (*a[0]));
 
   /* retour habituel de fonction */
   return 0;
