@@ -184,7 +184,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
 
       /* marquer le début de la ligne suivante dans le tableau 'ia' */
       (*ia)[vind] = nnz;       
-      printf("%d\n", (*ia)[vind]);
+      //printf("%d\n", (*ia)[vind]);
         
       /* remplissage de la ligne : voisin sud */
       if (iy > 0){
@@ -196,7 +196,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
           else{
             (*ja)[nnz] = vind - *nx + dx;
           }
-          printf("Sud %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
+          //printf("Sud %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
           nnz++;
         }
       }
@@ -208,7 +208,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
         else {
           (*a)[nnz] = -invh2; /* pour D=1 */
           (*ja)[nnz] = vind - 1;
-          printf("Ouest %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
+          //printf("Ouest %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
           nnz++;
         }
       }
@@ -216,7 +216,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
       /* remplissage de la ligne : élément diagonal */
       (*a)[nnz] = 4.0*invh2; /* pour D=1 */
       (*ja)[nnz] = vind;
-      printf("Diagonal %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
+      //printf("Diagonal %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
       nnz++;
 
       /* remplissage de la ligne : voisin est */
@@ -226,7 +226,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
         else{
           (*a)[nnz] = -invh2; /* pour D=1 */
           (*ja)[nnz] = vind + 1;
-          printf("Est %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
+          //printf("Est %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
           nnz++;
         }
       }
@@ -241,11 +241,11 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
           else{
             (*ja)[nnz] = vind + *nx - dx;
           }
-          printf("Nord %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
+          //printf("Nord %d / %f / %d / %d\n", vind, (*a)[nnz], (*ja)[nnz], nnz);
           nnz++; 
         } 
       }
-      printf("\n");
+      //printf("\n");
     }
   }
 

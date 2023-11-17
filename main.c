@@ -6,6 +6,7 @@
 #include "prob.h"
 #include "time.h"
 #include "interface_primme.h"
+#include "matvec.h"
 
 int main(int argc, char *argv[])
 {
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
 
 
   
-/* 
+  /*
   FILE *gnuplotPipe = popen("gnuplot -persistent", "w");
 
   if (gnuplotPipe) {
@@ -89,19 +90,21 @@ int main(int argc, char *argv[])
   } else {
     printf("Erreur : Impossible d'ouvrir GNUplot.\n");
   }
-
   */
   
-  /* 
+
+  
+ /* 
+   
   FILE *gnuplotPipe = popen("gnuplot -persistent", "w");
 
   if (gnuplotPipe) {
-    fprintf(gnuplotPipe, "set view 60, 210, 1, 1\n");
+    fprintf(gnuplotPipe, "set view 60, 270, 1, 1\n");
     fprintf(gnuplotPipe, "set hidden3d\n");
-    fprintf(gnuplotPipe, "set dgrid3d 50,50 qnorm 5\n");
+      fprintf(gnuplotPipe, "set dgrid3d 50,50 qnorm 5\n");
     fprintf(gnuplotPipe, "set xrange [0:2]\n");
     fprintf(gnuplotPipe, "set yrange [0:2.5]\n");
-    fprintf(gnuplotPipe, "set zrange [-0.1:0.1]\n");
+    fprintf(gnuplotPipe, "set zrange [-1.0:1.0]\n");
 
     fprintf(gnuplotPipe, "splot '-' with lines\n");
   
@@ -114,7 +117,7 @@ int main(int argc, char *argv[])
       else {
         new_value = evecs[i - error];
       }
-
+      printf("%f %f %f\n", datax[i], datay[i], new_value);
       fprintf(gnuplotPipe, "%f %f %f\n", datax[i], datay[i], new_value);
     }
 
@@ -139,17 +142,16 @@ int main(int argc, char *argv[])
 
   //Calculons f(t, u(t))
   
-  double *U = malloc(ia[n] * sizeof(double));
-  double *result = malloc(ne * sizeof(double));
+  double *U = malloc(n * sizeof(double));
+  double *result = malloc(n * sizeof(double));
 
   
 
-  for(int i = 0; i < ia[n]; i++){
+  for(int i = 0; i < n; i++){
     U[i] = T0;
+    printf("U[%d] = %f\n", i, U[i]);
   }
-
-
-
+  
   /*
   FILE *fp = NULL; // Ouvrir le fichier pour écrire les données
   fp = popen("gnuplot -persistent", "w");
@@ -175,57 +177,60 @@ int main(int argc, char *argv[])
   }
   fclose(fp);
   */
- 
   
   FILE *fp = NULL; // Ouvrir le fichier pour écrire les données
   fp = popen("gnuplot -persist", "w");
   if(fp){
-    fprintf(fp, "unset key\n");
-    fprintf(fp, "set view map\n");
-    fprintf(fp, "set pm3d interpolate 10,10\n");
+    //fprintf(fp, "unset key\n");
+    //fprintf(fp, "set view map\n");
+    //fprintf(fp, "set pm3d interpolate 10,10\n");
+    //fprintf(fp, "set cbrange [0:25]\n");
     
     
     for (double k = 0; k < 2; k += 1) {
-      fprintf(fp, "splot '-' with pm3d\n");
+      //fprintf(fp, "splot '-' with pm3d\n");
+      printf("Itération numéro %f\n\n", k);
      
       for (int i = 0; i < ne; i++) {
         result[i] = 0.0;
         if((0.75 <= datax[i]) && (datax[i] <= 1.5) && (0.75 <= datay[i]) && (datay[i] <= 1.5)){
           error++;
-          U[i] = 0.0;
-          printf("%f %f %f %d\n", datay[i], datax[i], U[i], i);
-          fprintf(fp, "%f %f %f\n", datay[i], datax[i], U[i]);
+          //printf("%f %f %f %d\n", datay[i], datax[i], 0.0, i);
+          //fprintf(fp, "%f %f %f\n", datay[i], datax[i], 0.0);
           continue;
         }
-        for (int j = ia[i - error]; j < ia[i + 1 - error]; j++) {
-            result[i] += (-D) * U[j] * a[j]; 
-            //printf("resultat %d, %f,\n", j, U[j] * a[j]);
-            //printf("%d / %f / %f\n", j, U[j], a[j]);
+        matvec(U, result, &nev, n, ia, ja, a);
+         
+        for(int j = 0; j < n; j++){
+          result[j - error] = -D * result[j - error];
+          U[i - error] = U[i - error] + (h * result[i - error]);
+          printf("%f / %f\n", result[j - error], U[i - error]);
         }
-        //printf("%f\n", result[i]);
-        //printf("%d / %f / %f\n", i, U[i], result[i]);
-        U[i] = U[i] + (h * result[i]); 
 
-        printf("%f %f %f %d\n", datay[i], datax[i], U[i], i);
-        fprintf(fp, "%f %f %f\n", datay[i], datax[i], U[i]);
+        //printf("%f %f %f %d\n", datay[i], datax[i], U[i], i);
+        //fprintf(fp, "%f %f %f\n", datay[i], datax[i], U[i]);
           
         if((i + 1) % nx == 0){ 
-          printf("\n");
-          fprintf(fp, "\n");
+          //printf("\n");
+          //fprintf(fp, "\n");
         }
       }
-      printf("e\n");
-      fprintf(fp, "e\n");
+      error = 0.0;
+      //printf("e\n");
+      //fprintf(fp, "e\n");
+      //printf("\n");
+
 
 
 
       // Marquer la fin des données pour chaque ensemble
       
-      fflush(fp); // Forcer l'actualisation du graphique
+      //fflush(fp); // Forcer l'actualisation du graphique
+      //usleep(100000);
     }
     pclose(fp);
   }
- 
+  
   
 
 
