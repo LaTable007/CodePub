@@ -38,21 +38,21 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
 */
 {   
   int  nnz, ix, iy, ind = 0, ny;
-  double invh2, lx = 2.0, ly =  5.0 / 2, d, h; /* longueur du côté le plus petit du rectangle (en m) */
+  double invh2, lx = 8.0, ly =  10.0, d, h; /* longueur du côté le plus petit du rectangle (en m) */
 
   if (lx <= ly){ // si le rectangle est plus long en y on fait en sorte que le pas de discrétisation est définie sur x
     //nx = m - 2; //nombre d'élément le long de x
-    *nx = (lx * 4 * m) - 1;
+    *nx = (lx * m) - 1;
     //nx = (lx * m) - 1;
     d = ly - lx; // la différence entre la longueur et largeur
     //h = lx / (m-1);// le pas de discrétisation
-    h = 1.0 / (m * 4);
+    h = 1.0 / m;
     //h = 1.0 / m;
     ny = (d / h) + *nx;//nombre d'élément selon y
     //invh2 = (m-1) * (m-1) / (lx * lx);//inverse au carré du pas de dicrétisation
     invh2 = 1 / (h * h);
   }
-
+/*
   else{//même résonnement qu'avant mais pour un rectangle dont le plus grand côté est en x
     ny = m - 2;
     d = lx - ly;
@@ -60,13 +60,13 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
     *nx = (d / h) + ny;
     invh2 = (m-1) * (m-1) / (ly * ly);
   }
-
+*/
   printf("le pas = %f\n", h);
   printf("élément x = %d\n", *nx);
   printf("élément y = %d\n", ny);
   printf("invh2 = %f\n", invh2);
 
-  double tx1 = 3.0 / 4, tx2 = 6.0 / 4, ty1 = 3.0 / 4, ty2 = 6.0 / 4;
+  double tx1 = 3.0, tx2 = 6.0, ty1 = 3.0, ty2 = 6.0;
   int tind, dx, find, dy;
 
   if ((tx1 != 0.0) && (ty1 != 0.0) && (tx2 != lx)){
@@ -80,13 +80,15 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
   else if ((tx1 != 0.0) && (ty1 == 0.0)) {
     printf("cas 2\n");
     tind = tx1 / h;
-    dx = tx2 / h - tind;
+    dx = (tx2 / h) - (tx1 / h);
   }
 
   else if ((tx1 == 0.0) && (ty1 != 0.0)) {
     printf("cas 3\n");
-    tind = 1 + (*nx * ((ty1 / h) - 1));
-    dx = (tx2 / h) + (*nx * ((ty1 / h) - 1)) - tind;
+    tind = *nx * ((ty1 / h) - 1);
+    dx = (tx2 / h) - (tx1 / h);
+    dy = ((ty2 / h) - (ty1 / h)) * *nx;
+    find = tind + dy + dx;
   }
 
   else if ((tx1 == 0.0) && (ty1 == 0.0)) {
@@ -112,7 +114,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
   int fy;
   fy = ((ty2 - ty1) / h) + 1;
   printf("%d\n", fy);
-  *ne = *nx * ny;
+  *ne = (*nx + 2) * (ny + 2);
   *n  = *nx * ny - (((tx2 - tx1 + h) / h) * (ty2 - ty1 + h) / h); /* nombre d'inconnues */
   //nnz = ((5 * nx * ny) - (4.0 * (ny + nx) / 2)) - (6.0 * (tx2 - tx1 + h) * (ty2 - ty1 + h) / (h * h));
   nnz = (5 * *nx * ny) - (2 * (*nx + ny) ) - (5 * dx * fy) - (2 * (fy + dx));
@@ -145,8 +147,22 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
   if (*datax == NULL || *datay == NULL) {
     printf("\n ERREUR : pas assez de mémoire pour générer les coordonnées\n\n");
     return 1; 
-  } 
+  }
 
+  for (iy = 0; iy < (ny + 2); iy++) {
+    for (ix = 0; ix < (*nx + 2); ix++) { 
+      /* numéro de l'équation */
+
+      int dataind = ix  + ((*nx + 2) * iy);
+      
+      (*datax)[dataind] = h * (ix);
+      (*datay)[dataind] = h * (iy);
+      //printf("%f %f %d %d %d\n", (*datax)[dataind], (*datay)[dataind], dataind, ix, iy);
+      
+    }
+  }
+  //printf("%d\n", (*nx + 2));
+  
 
 
   for (iy = 0; iy < ny; iy++) {
@@ -154,9 +170,6 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
       /* numéro de l'équation */
       ind = ix  + *nx * iy;
       
-      (*datax)[ind] = h * (ix + 1);
-      (*datay)[ind] = h * (iy + 1);
-      //printf("%f, %d\n", (*datay)[ind], ind);
       
       //printf("%d ", ind); 
       
@@ -252,11 +265,11 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
   /* dernier élément du tableau 'ia' */
   (*ia)[vind + 1] = nnz;
   //printf("%d", nnz);
-  /*
+  
   P_SEP;
   int f = 0;
   for(;f < nnz; f++){
-   //printf("%f\n", (*a)[f]);
+    //printf("%f\n", (*a)[f]);
   }
   P_SEP;
   int i = 0;
@@ -269,10 +282,9 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
     //printf("%d\n", (*ja)[j]);
   }
 
-  for (int i = 0.0; i < *ne; i++){
-    printf("%f %d\n", (*datay)[i], i);
-  }
-  */
+  for(int i = 0.0; i < *ne; i++){}
+    //printf("%f %f %d\n", (*datax)[i], (*datay)[i], i);
+
   /* retour habituel de fonction */
   return 0;
 }
