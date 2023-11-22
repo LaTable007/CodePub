@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <unistd.h>
+#include "primme/PRIMMESRC/COMMONSRC/primme.h"
 #include "prob.h"
 #include "time.h"
 #include "interface_primme.h"
@@ -12,11 +13,11 @@ int main(int argc, char *argv[])
 {
   /* déclarer les variables */
 
-  int m = 2, nev = 1;
+  int m = 5, nev = 1;
   int n, *ia, *ja; 
   double *a;
   double *evals, *evecs;
-  double tc1, tc2, tw1, tw2;
+  double tc1, tc2, tc3, tc4, tw1, tw2, tw3, tw4;
   double *datax;
   double *datay;
   int ne;
@@ -40,7 +41,7 @@ int main(int argc, char *argv[])
 
   /* primme - résolution */
   tc1 = mytimer_cpu(); tw1 = mytimer_wall();
-  if(primme(n, ia, ja, a, nev, evals, evecs))
+  if(primme(n, ia, ja, a, nev, evals, evecs, primme_smallest))
      return 1;
   tc2 = mytimer_cpu(); tw2 = mytimer_wall();
 
@@ -48,16 +49,51 @@ int main(int argc, char *argv[])
   printf("\nTemps de solution (CPU): %5.1f sec",tc2-tc1);
   printf("\nTemps de solution (horloge): %5.1f sec \n",tw2-tw1);
   printf("\nValeur propre minimale calculée: %5.1f\n",evals[0]);
-  double new_value;
-  int error = 0.0;
+
+
+  /*PARTIE RESIDU*/
+  double residuNorme = 0.0;
+  double *res = malloc(n * sizeof(double));
+  double *resgauche = malloc(n * sizeof(double));
+  double *resdroit = malloc(n * sizeof(double));
+
+  tc3 = mytimer_cpu(); tw3 = mytimer_wall();
+  for(int i = 0; i < n; i++){
+    res[i] = 0.0;
+    resgauche[i] = 0.0;
+    resdroit[i] = (evals[0] * evecs[i]);
+    for(int j = ia[i]; j < ia[i + 1]; j++){
+      resgauche[i] += a[j] * evecs[ja[j]];
+    }
+    res[i] = resgauche[i] - resdroit[i];
+    residuNorme += (res[i] * res[i]);
+
+    //printf("valeur côté gauche %d %f\n", i, resgauche[i]);
+    //printf("valeur côté droit %d %f\n", i, resdroit[i]);
+
+  }
+  residuNorme = pow(residuNorme, 1.0/2);
+  tc4 = mytimer_cpu(); tw4 = mytimer_wall();
+
+ 
+
+
+  printf("Le résidu est égal à = %e\n", residuNorme);
+  printf("\nTemps de solution (CPU): %e sec",tc4-tc3);
+  printf("\nTemps de solution (horloge): %e sec \n",tw4-tw3);
   
- /* 
+
+  int error = 0.0;
+ 
+  
+ 
   FILE *gnuplotPipe = popen("gnuplot -persistent", "w");
 
   if (gnuplotPipe) {
-    fprintf(gnuplotPipe, "set view 60, 30, 1, 1\n");
+    fprintf(gnuplotPipe, "set view 60, 210, 1, 1\n");
     fprintf(gnuplotPipe, "set hidden3d\n");
     fprintf(gnuplotPipe, "set pm3d\n");
+    //fprintf(gnuplotPipe, "set palette defined (0 \"orchid4\", 1 \"mediumpurple3\", 2 \"slateblue1\")\n");
     //fprintf(gnuplotPipe, "set cbrange [-0.35:0.35]\n");
     //fprintf(gnuplotPipe, "set zrange [-0.35:0.35]\n");
 
@@ -78,13 +114,13 @@ int main(int argc, char *argv[])
         else if((datay[i] == 0.0) || (datay[i] == 10.0) || (datax[i] == 0.0) || (datax[i] == 8.0)){
           //printf("%f %f %f\n", datay[i], datax[i], 0.0);
           fprintf(gnuplotPipe, "%f %f %f\n", datay[i], datax[i], 0.0);
-          error++;
+         error++;
         }
 
         else {
           //printf("%f %f %d %f\n", datay[i], datax[i], error, evecs[i - error] * sinf(t * evecs[0]));
           //fprintf(gnuplotPipe, "%f %f %f\n", datay[i], datax[i], evecs[i - error] * sinf(t * evals[0]) * m);
-          fprintf(gnuplotPipe, "%f %f %f\n", datay[i], datax[i], evecs[i - error] * m);
+          fprintf(gnuplotPipe, "%f %f %f\n", datay[i], datax[i], fabs(evecs[i - error]) * m);
         }
         
         if((i + 1) % (nx + 2) == 0){ 
@@ -106,14 +142,14 @@ int main(int argc, char *argv[])
   else {
     printf("Erreur : Impossible d'ouvrir GNUplot.\n");
   }
-  */
+  
   
 
   //Méthode d'Euler progressive
 
   double T0 = 20;
   double D = 9.7 / (10 * 10 * 10 * 10 * 10);
-  double h = 50.0;
+  
 
 
 
@@ -123,13 +159,33 @@ int main(int argc, char *argv[])
   double *U = malloc(n * sizeof(double));
   double *result = malloc(n * sizeof(double));
 
+
+  double *pvals = malloc(nev * sizeof(double));
+  double *pvecs = malloc(nev * n * sizeof(double));
+  double *Da = malloc(ia[n] * sizeof(double));
+
+  for(int i = 0; i < ia[n]; i++){
+    Da[i] = D * a[i];
+    //printf("matrice DA %f %d\n", Da[i], i);
+  }
+  
+
+  if(primme(n, ia, ja, Da, nev, pvals, pvecs, primme_largest))
+     return 1;
+
+  printf("Valeur propre maximale calculée: %f\n", pvals[0]);
+
+  printf("La méthode d'Euler progressive devient instable à partir d'un pas qui vaut %f\n", 2.0 / pvals[0]);
+  double h = (2.0 / pvals[0]) - (2 / (pvals[0] * 100));
+  printf("Configurons un pas de %f", h);
+
   
 
   for(int i = 0; i < n; i++){
     U[i] = T0;
     //printf("U[%d] = %f\n", i, U[i]);
   }
- 
+
   FILE *fp = NULL; // Ouvrir le fichier pour écrire les données
   fp = popen("gnuplot -persist", "w");
   if(fp){
@@ -139,7 +195,7 @@ int main(int argc, char *argv[])
     fprintf(fp, "set cbrange [0:20]\n");
     
     
-    for (double k = 0; k < 2000; k++) {
+    for (int k = 0; k < (2000.0 / h); k++) {
       fprintf(fp, "splot '-' with pm3d\n");
       //printf("Itération numéro %f\n\n", k);
 
@@ -188,13 +244,10 @@ int main(int argc, char *argv[])
 
     pclose(fp);
   }
-  
-
  
 
-
   /*libérer la mémoire */
-  free(ia); free(ja); free(a); free(evals); free(evecs); free(datax); free(datay); free(U); free(result);
+  free(ia); free(ja); free(a); free(evals); free(evecs); free(datax); free(datay); free(U); free(result); free(res); free(pvals); free(pvecs); free(Da);
   return 0;
 }
 

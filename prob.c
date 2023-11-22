@@ -46,11 +46,11 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
     //nx = (lx * m) - 1;
     d = ly - lx; // la différence entre la longueur et largeur
     //h = lx / (m-1);// le pas de discrétisation
-    h = 1.0 / m;
+    h = 1.0 / (m);
     //h = 1.0 / m;
     ny = (d / h) + *nx;//nombre d'élément selon y
     //invh2 = (m-1) * (m-1) / (lx * lx);//inverse au carré du pas de dicrétisation
-    invh2 = 1 / (h * h);
+    invh2 = 16.0 / (h * h);
   }
 /*
   else{//même résonnement qu'avant mais pour un rectangle dont le plus grand côté est en x
@@ -282,8 +282,7 @@ int prob(int m, int *n, int **ia, int **ja, double **a, double **datax, double *
     //printf("%d\n", (*ja)[j]);
   }
 
-  for(int i = 0.0; i < *ne; i++){}
-    //printf("%f %f %d\n", (*datax)[i], (*datay)[i], i);
+
 
   /* retour habituel de fonction */
   return 0;

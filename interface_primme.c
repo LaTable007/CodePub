@@ -40,7 +40,7 @@ void matvec_primme(void *vx, void *vy, int *blockSize, primme_params *primme)
 /**/
 
 int primme(int primme_n, int *primme_ia, int *primme_ja, double *primme_a, 
-           int nev, double *evals, double *evecs)
+           int nev, double *evals, double *evecs, primme_target target)
 
 /*
    But
@@ -85,6 +85,7 @@ int primme(int primme_n, int *primme_ia, int *primme_ja, double *primme_a,
     primme.n = primme_n; /* dimensions de la matrice */
     primme.numEvals = nev; /* nombre de paires valeur propre-vecteur propre */
     primme.printLevel = 2; /* niveau d'affichage (1-4) */
+    primme.target = target;
 
     if(err = primme_set_method (DEFAULT_MIN_TIME, &primme)){
         printf("\nPRIMME: erreur N %d dans le choix de la methode \n    (voir 'Error Codes' dans le guide d'utilisateur)\n",err);
