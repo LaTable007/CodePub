@@ -93,7 +93,7 @@ int primme(int primme_n, int *primme_ia, int *primme_ja, double *primme_a,
     }
   
     /* afficher les papramètres de PRIMME */
-    primme_display_params (primme);
+    //primme_display_params (primme);
 
     /* Caclul des valeurs et vecteurs propres */
     if(err = dprimme (evals, evecs, resn, &primme)){
