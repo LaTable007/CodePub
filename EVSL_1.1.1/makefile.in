@@ -1,0 +1,89 @@
+###############################################################################
+##  All configurable variables are defined in the file named makefile.in.config
+##  When Autoconf is run, it will create a file named makefile.in which
+##  will have all of the configurable variables replaced with their values.
+##############################################################################
+
+
+srcdir = .
+top_srcdir = .
+prefix = /Users/noahdubuc/ComplementNumerique/projet/CodePub/EVSL_1.1.1/EVSL
+exec_prefix = ${prefix}
+
+
+EVSL_RELEASE_NAME    = EVSL
+EVSL_RELEASE_VERSION = 1.1.1
+EVSL_RELEASE_DATE    = 2018/03/23
+EVSL_RELEASE_TIME    = 00:00:00
+EVSL_RELEASE_BUGS    = saad@cs.umn.edu
+
+EVSL_SRC_DIR         = /Users/noahdubuc/ComplementNumerique/projet/CodePub/EVSL_1.1.1
+EVSL_BUILD_DIR       = /Users/noahdubuc/ComplementNumerique/projet/CodePub/EVSL_1.1.1/EVSL
+EVSL_INSTALL_DIR     = ${prefix}
+EVSL_LIB_INSTALL     = ${EVSL_INSTALL_DIR}/lib
+EVSL_INC_INSTALL     = ${EVSL_INSTALL_DIR}/include
+EVSL_LIB_SUFFIX      = .a
+
+EVSL_WITH_CUDA       = NO
+EVSL_WITH_MKL        = NO
+
+.SUFFIXES: .o .c .f90 .cu
+
+##################################################################
+## RULES
+# ##################################################################
+%.o: %.c
+	$(MUTE) $(CC) $(CFLAGS) $(INCLUDES) -o $@ -c $<
+
+%.o: %.f90
+	$(MUTE) $(FC) $(FCFLAGS) $(INCLUDES) -o $@ -c $<
+
+%.o: %.cu
+	$(MUTE) $(CUCC) $(CUFLAGS) $(INCLUDES) -o $@ -c $<
+
+CC                   = gcc
+CFLAGS               = -O2 -Wall -Wno-unused-result 
+LINK_CC              = gcc
+FC                   = gfortran
+FCFLAGS              = -O2 
+LINK_FC              = gfortran
+LDFLAGS              = 
+CUCC                 = 
+CUFLAGS              = 
+AR                   = ar rc
+RANLIB               = ranlib
+LIBS_DIR             = 
+LIBS                 = -lm 
+
+# SHARED LIBRARIES
+BUILD_FC_SHARED     = 
+BUILD_CC_SHARED     = 
+SHARED_SET_SONAME   = 
+SHARED_OPTIONS      = 
+
+##################################################################
+## BLAS & LAPACK
+##################################################################
+LIBLAPACK            = 
+LIBLAPACK_DIR        = 
+LIBBLAS              = 
+LIBBLAS_DIR          = 
+
+##################################################################
+## INTEL MKL
+##################################################################
+MKLROOT             = 
+
+##################################################################
+## CUDA
+##################################################################
+CUDA_HOME           = 
+
+##################################################################
+## DIRECT SOLVER
+##################################################################
+DIRECTSOL            = CXSPARSE
+DIRECTSOL_INTERFACE  = ${EVSL_SRC_DIR}/DIRECT/Interface/evsl_cxsparse.o
+METIS_DIR            = 
+SUITESPARSE_DIR      = 
+LIBDIRECTSOL         = -L/Users/noahdubuc/ComplementNumerique/projet/CodePub/EVSL_1.1.1/DIRECT/CXSparse/Lib -lcxsparse

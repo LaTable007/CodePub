@@ -1,0 +1,52 @@
+This  directory  contains  drivers  for testing  a  few  routines  for
+computing eigenvalues of a sparse (symmetric real) matrix pair (A, B),
+where B is assumed to be positive definite.
+
+All drivers read the matrices A and B in matrix market format from a file
+(matfile) -- see below for details. There are 4 drivers provided.
+
+
+MMsimple.c A stripped down driver. Requires  no direct solves, and only requires
+      the matrix (info entered in driver) and number of eigenvalues (61 in NM1A,
+      the  default)  to  be  run.   Run as  ./MMsimple.ex.  Maintains  the  same
+      structure  as the  other drivers  for easy  interoperability, while  still
+      being composed of not-overly-complex code.
+
+MMPLanN.c Pol. filtering Lanczos algorithm with no restarts
+	  uses Lanczos for slicing. 
+ 	 
+       ** Note:  this driver  tests  the case  when all  operations  with B  are
+       performed  by  a  polynomial  approximation  -  so  no  factorization  is
+       required.
+
+MMPLanR.c Pol. filtering Lanczos algorithm with restarts
+	  uses KPM for slicing
+
+MMRLanN.c Rational filtering Lanczos algorithm with no restarts
+	  uses Lanczos for slicing
+
+MMRLanR.c Rational filtering Lanczos algorithm with no restarts
+	  uses KPM for slicing
+
+Drivers  that use  alternate spectrum  slicing for  each of  the above
+drivers are  included in the  EXTRAS sub-directory. These  can replace
+the corresponding  ones provided above if  the user wants to  test say
+KPM vs. Lanczos for spectrum  slicing (e.g., KPM_MMRLanN.c will is the
+same as MMRLanN.c above except that it uses KPM instead of Lanczos for
+spectrum slicing).
+
+
+matfile : input file containing the path to the matrix to be read by Gen*.c
+          - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+	  1                                                 %% number of matrices
+          MatrixFile_A  MatrixFile_B MatrixName_A MatrixName_B  MatrixFormat  a  b  nslices
+          MatrixFormat: coordinate format (matrix market format)
+            MM0: matrix format indexing starts at 0 
+            MM1: matrix format indexing starts at 1
+          a, b : interval [a, b] of interest
+          nslices: number of slices for spectrum slicing
+          Example:
+          /MATRICES/A.mtx /MATRICES/B.mtx stiff1 mass1 MM1  28.617629  1746.952 2
+          - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+The computed eigenvalues are saved in the OUT/ folder. 
