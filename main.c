@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
   int ne;
   int nx;
 
+  /* initialiser le générateur de nombres aléatoires */
   /* générer le problème */
   if (prob(m, &n, &ia, &ja, &a, &datax, &datay, &ne, &nx))
     return 1;
