@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
   int ne;
   int nx;
 
+  /*test de la fonction matvec*/
   /* initialiser le générateur de nombres aléatoires */
   /* générer le problème */
   if (prob(m, &n, &ia, &ja, &a, &datax, &datay, &ne, &nx))
