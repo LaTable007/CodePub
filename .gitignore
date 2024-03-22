@@ -1,7 +1,6 @@
-.idea
-.vscode
-main.dSYM/Contents
-.DS_Store
+/.DS_Store
+/.vscode
+/.idea
 /primme
 /EVSL_1.1.1
 main
